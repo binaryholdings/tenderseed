@@ -1,0 +1,21 @@
+image: golang:1.12
+
+stages:
+  - test
+  - build
+
+unit_tests:
+  stage: test
+  script:
+    - make test
+
+lint:
+  stage: test
+  script:
+    - go get -u golang.org/x/lint/golint
+    - make lint
+
+build:
+  stage: build
+  script:
+    - make
