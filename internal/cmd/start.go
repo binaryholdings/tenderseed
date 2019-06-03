@@ -136,6 +136,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 
 	cmn.TrapSignal(logger, func() {
 		logger.Info("shutting down...")
+		book.Save()
 		err := sw.Stop()
 		if err != nil {
 			panic(err)
