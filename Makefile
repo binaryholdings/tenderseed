@@ -16,7 +16,8 @@ test:
 	go test ./...
 
 lint:
-	golint --set_exit_status ./...
+	@echo "--> Running linter"
+	@golangci-lint run ./...
 
 clean:
 	rm -rf build

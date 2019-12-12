@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"tenderseed/internal/tenderseed"
 
 	"github.com/google/subcommands"
 	"github.com/tendermint/tendermint/config"
@@ -15,6 +14,8 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/p2p/pex"
 	"github.com/tendermint/tendermint/version"
+
+	"github.com/marbar3778/tenderseed/internal/tenderseed"
 )
 
 // StartArgs for the start command

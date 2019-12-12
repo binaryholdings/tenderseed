@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"tenderseed/internal/cmd"
-	"tenderseed/internal/tenderseed"
+	"github.com/marbar3778/tenderseed/internal/cmd"
+	"github.com/marbar3778/tenderseed/internal/tenderseed"
 
 	"github.com/google/subcommands"
 	"github.com/mitchellh/go-homedir"

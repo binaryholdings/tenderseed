@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"tenderseed/internal/tenderseed"
+
+	"github.com/marbar3778/tenderseed/internal/tenderseed"
 
 	"github.com/google/subcommands"
 	"github.com/tendermint/tendermint/p2p"

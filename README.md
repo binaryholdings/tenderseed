@@ -1,12 +1,14 @@
 # TenderSeed
 
-A lightweight seed node for a tendermint p2p network.
+## This is a fork of polychainlabs tenderseed repo
 
-Seed nodes maintain an address book of active peers on a tendermint p2p network. New nodes can dial known seeds and request lists of active peers for establishing p2p connections.
+A lightweight seed node for a Tendermint p2p network.
 
-This project implementes a lightweight seed node. The lightweight node maintains an address book of active peers, but **does not** relay or store blocks or transactions.
+Seed nodes maintain an address book of active peers on a Tendermint p2p network. New nodes can dial known seeds and request lists of active peers for establishing p2p connections.
 
-Familiarity with [tendermint network operation](https://tendermint.com/docs/tendermint-core/using-tendermint.html) is a pre-requisite to understanding how to use TenderSeed.
+This project implements a lightweight seed node. The lightweight node maintains an address book of active peers, but **does not** relay or store blocks or transactions.
+
+Familiarity with [Tendermint network operation](https://tendermint.com/docs/tendermint-core/using-tendermint.html) is a pre-requisite to understanding how to use TenderSeed.
 
 ## Quickstart
 
@@ -18,7 +20,7 @@ $ tenderseed start
 
 To view your node id (you will need this for other nodes to connect), invoke the `show-node-id` command.
 
-> The first run of tenderseed will generate a node key if one does not exist.
+> The first run of Tenderseed will generate a node key if one does not exist.
 
 ```shell
 $ tenderseed show-node-id
@@ -42,7 +44,7 @@ TenderSeed is configured by a [toml](https://github.com/toml-lang/toml) config f
 
 The seed is configured via a [toml](https://github.com/toml-lang/toml) config file. The default configuration file is shown below.
 
-> A first run of tenderseed will generate a default configuration if one does not exist.
+> A first run of Tenderseed will generate a default configuration if one does not exist.
 
 ```toml
 # path to address book (relative to tendermint-seed home directory or an absolute path)

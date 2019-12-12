@@ -8,6 +8,7 @@ import (
 )
 
 // Config is a tenderseed configuration
+//nolint:lll
 type Config struct {
 	ListenAddress       string `toml:"laddr" comment:"Address to listen for incoming connections"`
 	ChainID             string `toml:"chain_id" comment:"network identifier (todo move to cli flag argument? keeps the config network agnostic)"`
