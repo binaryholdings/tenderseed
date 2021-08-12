@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/marbar3778/tenderseed/internal/tenderseed"
+	"github.com/binaryholdings/tenderseed/internal/tenderseed"
 
 	"github.com/google/subcommands"
 	"github.com/tendermint/tendermint/p2p"
