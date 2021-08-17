@@ -9,7 +9,7 @@ COPY . ./tenderseed
 
 RUN cd /tenderseed && \ 
       go mod download && \
-      make install
+      go install ./...
       
 FROM faddat/archlinux
 
