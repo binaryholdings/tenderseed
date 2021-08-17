@@ -3,7 +3,7 @@ FROM faddat/archlinux as builder
 ENV GOPATH /go
 ENV PATH $PATH:/go/bin
 
-RUN pacman -Syyu go git
+RUN pacman -Syyu --noconfirm go git
 
 COPY . ./tenderseed
 
