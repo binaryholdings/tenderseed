@@ -122,7 +122,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 	pexReactor := pex.NewReactor(book, &pex.ReactorConfig{
 		SeedMode: true,
 		// TODO(roman) see SeedConfig.Seeds field comment for blocker
-		// Seeds:    args.SeedConfig.Seeds,
+		Seeds:    args.SeedConfig.Seeds,
 	})
 	pexReactor.SetLogger(filteredLogger.With("module", "pex"))
 
