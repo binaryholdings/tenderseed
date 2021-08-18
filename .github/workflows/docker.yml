@@ -30,7 +30,7 @@ jobs:
         uses: docker/build-push-action@v2.6.1
         with:
           context: .
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-           ghcr.io/notional-labs/tenderseed:latest
+           ghcr.io/notional-labs/${{ github.repository_owner }}:latest
