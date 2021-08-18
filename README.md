@@ -46,35 +46,9 @@ tenderseed --home /some/path/to/home/dir
 
 ## Configuration
 
-TenderSeed is configured by a [toml](https://github.com/toml-lang/toml) config file found in the tenderseed [home dir](#Home-Dir) as `config/config.toml`
+Use flags.  Statefulness bad.
 
-The seed is configured via a [toml](https://github.com/toml-lang/toml) config file. The default configuration file is shown below.
 
-> A first run of Tenderseed will generate a default configuration if one does not exist.
-
-```toml
-# path to address book (relative to tendermint-seed home directory or an absolute path)
-addr_book_file = "data/addrbook.json"
-
-# Set true for strict routability rules
-# Set false for private or local networks
-addr_book_strict = true
-
-# network identifier (todo move to cli flag argument? keeps the config network agnostic)
-chain_id = "some-chain-id"
-
-# Address to listen for incoming connections
-laddr = "tcp://0.0.0.0:26656"
-
-# maximum number of inbound connections
-max_num_inbound_peers = 1000
-
-# maximum number of outbound connections
-max_num_outbound_peers = 10
-
-# path to node_key (relative to tendermint-seed home directory or an absolute path)
-node_key_file = "config/node_key.json"
-```
 
 ## License
 
