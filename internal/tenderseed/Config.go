@@ -10,15 +10,14 @@ import (
 // Config is a tenderseed configuration
 //nolint:lll
 type Config struct {
-	ListenAddress       string `toml:"laddr" comment:"Address to listen for incoming connections"`
-	ChainID             string `toml:"chain_id" comment:"network identifier (todo move to cli flag argument? keeps the config network agnostic)"`
-	NodeKeyFile         string `toml:"node_key_file" comment:"path to node_key (relative to tendermint-seed home directory or an absolute path)"`
-	AddrBookFile        string `toml:"addr_book_file" comment:"path to address book (relative to tendermint-seed home directory or an absolute path)"`
-	AddrBookStrict      bool   `toml:"addr_book_strict" comment:"Set true for strict routability rules\n Set false for private or local networks"`
-	MaxNumInboundPeers  int    `toml:"max_num_inbound_peers" comment:"maximum number of inbound connections"`
-	MaxNumOutboundPeers int    `toml:"max_num_outbound_peers" comment:"maximum number of outbound connections"`
-	// TODO(roman) waiting on https://github.com/tendermint/tendermint/pull/3647
-	// Seeds               []string `toml:"seeds" comment:"seed nodes we can use to discover peers"`
+	ListenAddress       string   `toml:"laddr" comment:"Address to listen for incoming connections"`
+	ChainID             string   `toml:"chain_id" comment:"network identifier (todo move to cli flag argument? keeps the config network agnostic)"`
+	NodeKeyFile         string   `toml:"node_key_file" comment:"path to node_key (relative to tendermint-seed home directory or an absolute path)"`
+	AddrBookFile        string   `toml:"addr_book_file" comment:"path to address book (relative to tendermint-seed home directory or an absolute path)"`
+	AddrBookStrict      bool     `toml:"addr_book_strict" comment:"Set true for strict routability rules\n Set false for private or local networks"`
+	MaxNumInboundPeers  int      `toml:"max_num_inbound_peers" comment:"maximum number of inbound connections"`
+	MaxNumOutboundPeers int      `toml:"max_num_outbound_peers" comment:"maximum number of outbound connections"`
+	Seeds               []string `toml:"seeds" comment:"seed nodes we can use to discover peers"`
 }
 
 // LoadOrGenConfig loads a seed config from file if the file exists
@@ -73,7 +72,7 @@ func DefaultConfig() *Config {
 		AddrBookFile:        "data/addrbook.json",
 		AddrBookStrict:      true,
 		MaxNumInboundPeers:  1000,
-		MaxNumOutboundPeers: 10,
-		// Seeds:               nil,
+		MaxNumOutboundPeers: 60,
+		Seeds:               nil,
 	}
 }

@@ -22,6 +22,8 @@ import (
 type StartArgs struct {
 	HomeDir    string
 	SeedConfig tenderseed.Config
+	Seeds      []string
+	ChainID    string
 }
 
 // Name returns the command name
@@ -80,14 +82,14 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 	logger.Info("tenderseed",
 		"key", nodeKey.ID(),
 		"listen", args.SeedConfig.ListenAddress,
-		"chain", args.SeedConfig.ChainID,
+		"chain", args.ChainID,
 		"strict-routing", args.SeedConfig.AddrBookStrict,
 		"max-inbound", args.SeedConfig.MaxNumInboundPeers,
 		"max-outbound", args.SeedConfig.MaxNumOutboundPeers,
 	)
 
 	// TODO(roman) expose per-module log levels in the config
-	filteredLogger := log.NewFilter(logger, log.AllowError())
+	filteredLogger := log.NewFilter(logger, log.AllowInfo())
 
 	protocolVersion :=
 		p2p.NewProtocolVersion(
@@ -100,7 +102,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 		ProtocolVersion: protocolVersion,
 		DefaultNodeID:   nodeKey.ID(),
 		ListenAddr:      args.SeedConfig.ListenAddress,
-		Network:         chainID,
+		Network:         args.ChainID,
 		Version:         "0.0.1",
 		Channels:        []byte{pex.PexChannel},
 		Moniker:         fmt.Sprintf("%s-seed", chainID),
@@ -121,8 +123,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 
 	pexReactor := pex.NewReactor(book, &pex.ReactorConfig{
 		SeedMode: true,
-		// TODO(roman) see SeedConfig.Seeds field comment for blocker
-		// Seeds:    args.SeedConfig.Seeds,
+		Seeds:    args.Seeds,
 	})
 	pexReactor.SetLogger(filteredLogger.With("module", "pex"))
 
