@@ -18,6 +18,7 @@ type Config struct {
 	MaxNumInboundPeers  int      `toml:"max_num_inbound_peers" comment:"maximum number of inbound connections"`
 	MaxNumOutboundPeers int      `toml:"max_num_outbound_peers" comment:"maximum number of outbound connections"`
 	Seeds               []string `toml:"seeds" comment:"seed nodes we can use to discover peers"`
+	HomeDir             string
 }
 
 // LoadOrGenConfig loads a seed config from file if the file exists
@@ -28,7 +29,7 @@ func LoadOrGenConfig(filePath string) (*Config, error) {
 	if err == nil {
 		return config, nil
 	} else if !os.IsNotExist(err) {
-		return nil, err
+		return &Config{}, err
 	}
 
 	// file did not exist
@@ -74,5 +75,6 @@ func DefaultConfig() *Config {
 		MaxNumInboundPeers:  1000,
 		MaxNumOutboundPeers: 60,
 		Seeds:               nil,
+		HomeDir:             "",
 	}
 }

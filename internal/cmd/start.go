@@ -20,10 +20,7 @@ import (
 
 // StartArgs for the start command
 type StartArgs struct {
-	HomeDir    string
 	SeedConfig tenderseed.Config
-	Seeds      []string
-	ChainID    string
 }
 
 // Name returns the command name
@@ -52,14 +49,15 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 
 	chainID := args.SeedConfig.ChainID
 
+	// Load from config file
 	nodeKeyFilePath := args.SeedConfig.NodeKeyFile
 	addrBookFilePath := args.SeedConfig.AddrBookFile
 
 	if !filepath.IsAbs(nodeKeyFilePath) {
-		nodeKeyFilePath = filepath.Join(args.HomeDir, nodeKeyFilePath)
+		nodeKeyFilePath = filepath.Join(args.SeedConfig.HomeDir, nodeKeyFilePath)
 	}
 	if !filepath.IsAbs(addrBookFilePath) {
-		addrBookFilePath = filepath.Join(args.HomeDir, addrBookFilePath)
+		addrBookFilePath = filepath.Join(args.SeedConfig.HomeDir, addrBookFilePath)
 	}
 
 	tenderseed.MkdirAllPanic(filepath.Dir(nodeKeyFilePath), os.ModePerm)
@@ -82,7 +80,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 	logger.Info("tenderseed",
 		"key", nodeKey.ID(),
 		"listen", args.SeedConfig.ListenAddress,
-		"chain", args.ChainID,
+		"chain", args.SeedConfig.ChainID,
 		"strict-routing", args.SeedConfig.AddrBookStrict,
 		"max-inbound", args.SeedConfig.MaxNumInboundPeers,
 		"max-outbound", args.SeedConfig.MaxNumOutboundPeers,
@@ -102,7 +100,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 		ProtocolVersion: protocolVersion,
 		DefaultNodeID:   nodeKey.ID(),
 		ListenAddr:      args.SeedConfig.ListenAddress,
-		Network:         args.ChainID,
+		Network:         args.SeedConfig.ChainID,
 		Version:         "0.0.1",
 		Channels:        []byte{pex.PexChannel},
 		Moniker:         fmt.Sprintf("%s-seed", chainID),
@@ -123,7 +121,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 
 	pexReactor := pex.NewReactor(book, &pex.ReactorConfig{
 		SeedMode: true,
-		Seeds:    args.Seeds,
+		Seeds:    args.SeedConfig.Seeds,
 	})
 	pexReactor.SetLogger(filteredLogger.With("module", "pex"))
 
