@@ -25,8 +25,10 @@ func getSeedConfig() *tenderseed.Config {
 	configFile := flag.String("config", "config/config.toml", "path to configuration file within home directory")
 	homeDir := flag.String("home", filepath.Join(userHomeDir, ".tenderseed"), "path to tenderseed home directory")
 
-	// Param that can be in config.toml
+	// Param that can't be set by env var
 	chainID := flag.String("chain-id", "", "Chain ID")
+
+	// Param that can be set by both env var and config.toml
 	seeds := flag.String("seeds", "", "Comma separated list of seeds.")
 	listenAddress := flag.String("listenAddress", "", "Address to listen for incoming connections")
 	nodeKeyFile := flag.String("nodeKeyFile", "", "path to node_key (relative to tendermint-seed home directory or an absolute path)")
@@ -38,15 +40,16 @@ func getSeedConfig() *tenderseed.Config {
 	flag.Parse()
 
 	// overwrite homedir and configfile with env var if they're set
-	os_homeDir := os.Getenv(*chainID + "_" + "homeDir")
-	os_configFile := os.Getenv(*chainID + "_" + "configFile")
-	if os_homeDir != "" {
-		homeDir = &os_homeDir
+	if *chainID != "" {
+		os_homeDir := os.Getenv(*chainID + "_" + "homeDir")
+		os_configFile := os.Getenv(*chainID + "_" + "configFile")
+		if os_homeDir != "" {
+			homeDir = &os_homeDir
+		}
+		if os_configFile != "" {
+			configFile = &os_configFile
+		}
 	}
-	if os_configFile != "" {
-		configFile = &os_configFile
-	}
-
 	// load from config file first
 	configFilePath := filepath.Join(*homeDir, *configFile)
 	tenderseed.MkdirAllPanic(filepath.Dir(configFilePath), os.ModePerm)
@@ -86,6 +89,9 @@ func getSeedConfig() *tenderseed.Config {
 		seedConfig.MaxNumOutboundPeers = *maxNumOutboundPeers
 	}
 
+	if *chainID == "" {
+		chainID = &seedConfig.ChainID
+	}
 	// overwrite config with os evironment var
 	os_seeds := os.Getenv(*chainID + "_" + "seeds")
 	os_maxNumOutBoundPeers := os.Getenv(*chainID + "_" + "maxNumOutBoundPeers")
@@ -94,6 +100,7 @@ func getSeedConfig() *tenderseed.Config {
 	os_addrBookFile := os.Getenv(*chainID + "_" + "addrBookFile")
 	os_listenAddress := os.Getenv(*chainID + "_" + "listenAddress")
 	os_nodeKeyFile := os.Getenv(*chainID + "_" + "nodeKeyFile")
+	os_homeDir := os.Getenv(*chainID + "_" + "homeDir")
 
 	if os_seeds != "" {
 		seedSlice := strings.Split(os_seeds, ",")
@@ -132,7 +139,6 @@ func getSeedConfig() *tenderseed.Config {
 	}
 
 	return seedConfig
-
 }
 
 func main() {
