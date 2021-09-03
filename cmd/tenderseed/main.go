@@ -22,7 +22,9 @@ func main() {
 
 	homeDir := flag.String("home", filepath.Join(userHomeDir, ".tenderseed"), "path to tenderseed home directory")
 	configFile := flag.String("config", "config/config.toml", "path to configuration file within home directory")
-	
+	chainID := flag.String("chain-id", "", "chain id")
+	seeds := flag.String("seeds", "", "comma separated list of seeds")
+			     
 	// parse top level flags
 	flag.Parse()
 	
@@ -34,11 +36,15 @@ func main() {
 		panic(err)
 	}
 	
-	// Get and set predefined chain-id, seeds-nodes from ENV
-	if os.getenv("SEEDS"):
-            seedConfig.Seeds = os.getenv("SEEDS")
-        if os.getenv("CHAIN_ID"):
-            seedConfig.ChainID = os.getenv("CHAIN_ID")
+	// Get and set predefined chain-id, seeds-nodes from ENV or ARGS
+	if os.getenv("TENDERSEED_CHAIN_ID"):
+            seedConfig.ChainID = os.getenv("TENDERSEED_CHAIN_ID")
+	if os.getenv("TENDERSEED_SEEDS"):
+            seedConfig.Seeds = os.getenv("TENDERSEED_SEEDS")
+        if seeds:
+            seedConfig.Seeds = seeds
+        if chainID:
+            seedConfig.ChainID = chainID
 	
 	subcommands.ImportantFlag("home")
 	subcommands.ImportantFlag("config")
