@@ -5,13 +5,13 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strings"
 	"path/filepath"
 
 	"github.com/google/subcommands"
 	"github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
+	tmstrings "github.com/tendermint/tendermint/libs/strings"
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/p2p/pex"
 	"github.com/tendermint/tendermint/version"
@@ -50,7 +50,6 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 	)
 
 	chainID := args.SeedConfig.ChainID    
-	seeds := strings.Split(args.SeedConfig.Seeds, ",")
 	nodeKeyFilePath := args.SeedConfig.NodeKeyFile
 	addrBookFilePath := args.SeedConfig.AddrBookFile
 
@@ -122,7 +121,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 
 	pexReactor := pex.NewReactor(book, &pex.ReactorConfig{
 		SeedMode: true,
-		Seeds:    seeds,
+		Seeds:    tmstrings.SplitAndTrim(args.SeedConfig.Seeds, ",", " "),
 	})
 	pexReactor.SetLogger(filteredLogger.With("module", "pex"))
 
