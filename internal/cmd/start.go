@@ -50,7 +50,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 	)
 
 	chainID := args.SeedConfig.ChainID    
-	seeds := strings.Split(*args.SeedConfig.Seeds, ",")
+	seeds := strings.Split(args.SeedConfig.Seeds, ",")
 	nodeKeyFilePath := args.SeedConfig.NodeKeyFile
 	addrBookFilePath := args.SeedConfig.AddrBookFile
 
