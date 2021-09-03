@@ -36,15 +36,26 @@ func main() {
 		panic(err)
 	}
 	
-	// Get and set predefined chain-id, seeds-nodes from ENV or ARGS
-	if os.getenv("TENDERSEED_CHAIN_ID"):
-            seedConfig.ChainID = os.getenv("TENDERSEED_CHAIN_ID")
-	if os.getenv("TENDERSEED_SEEDS"):
-            seedConfig.Seeds = os.getenv("TENDERSEED_SEEDS")
-        if seeds:
-            seedConfig.Seeds = seeds
-        if chainID:
-            seedConfig.ChainID = chainID
+	// Get chain-id, seeds-nodes from ENV
+        env_chainid, env_chainid_ok := os.LookupEnv("TENDERSEED_CHAIN_ID")
+        env_seeds, env_seeds_ok := os.LookupEnv("TENDERSEED_SEEDS")
+
+        // Set chain-id, seeds-nodes from ARGS or ENV
+        if *chainID != ""  {
+            seedConfig.ChainID = *chainID
+        } else if env_chainid_ok {
+             seedConfig.ChainID = env_chainid
+        }
+        if *seeds != "" {
+            seedConfig.Seeds = *seeds
+	} else if env_seeds_ok {
+             seedConfig.Seeds = env_seeds
+        }
+
+        if seedConfig.ChainID == "" || seedConfig.Seeds == "" {
+            panic("Not set chain-id/seeds")
+        }
+        
 	
 	subcommands.ImportantFlag("home")
 	subcommands.ImportantFlag("config")
