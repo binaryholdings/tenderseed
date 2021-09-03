@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"path/filepath"
 
 	"github.com/google/subcommands"
@@ -22,8 +23,6 @@ import (
 type StartArgs struct {
 	HomeDir    string
 	SeedConfig tenderseed.Config
-	Seeds      []string
-	ChainID    string
 }
 
 // Name returns the command name
@@ -50,8 +49,8 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 		log.NewSyncWriter(os.Stdout),
 	)
 
-	chainID := args.SeedConfig.ChainID
-
+	chainID := args.SeedConfig.ChainID    
+	seeds := strings.Split(*args.SeedConfig.Seeds, ",")
 	nodeKeyFilePath := args.SeedConfig.NodeKeyFile
 	addrBookFilePath := args.SeedConfig.AddrBookFile
 
@@ -82,7 +81,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 	logger.Info("tenderseed",
 		"key", nodeKey.ID(),
 		"listen", args.SeedConfig.ListenAddress,
-		"chain", args.ChainID,
+		"chain", chainID,
 		"strict-routing", args.SeedConfig.AddrBookStrict,
 		"max-inbound", args.SeedConfig.MaxNumInboundPeers,
 		"max-outbound", args.SeedConfig.MaxNumOutboundPeers,
@@ -102,7 +101,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 		ProtocolVersion: protocolVersion,
 		DefaultNodeID:   nodeKey.ID(),
 		ListenAddr:      args.SeedConfig.ListenAddress,
-		Network:         args.ChainID,
+		Network:         chainID,
 		Version:         "0.0.1",
 		Channels:        []byte{pex.PexChannel},
 		Moniker:         fmt.Sprintf("%s-seed", chainID),
@@ -123,7 +122,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 
 	pexReactor := pex.NewReactor(book, &pex.ReactorConfig{
 		SeedMode: true,
-		Seeds:    args.Seeds,
+		Seeds:    seeds,
 	})
 	pexReactor.SetLogger(filteredLogger.With("module", "pex"))
 
