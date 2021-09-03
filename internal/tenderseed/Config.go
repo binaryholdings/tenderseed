@@ -17,7 +17,7 @@ type Config struct {
 	AddrBookStrict      bool     `toml:"addr_book_strict" comment:"Set true for strict routability rules\n Set false for private or local networks"`
 	MaxNumInboundPeers  int      `toml:"max_num_inbound_peers" comment:"maximum number of inbound connections"`
 	MaxNumOutboundPeers int      `toml:"max_num_outbound_peers" comment:"maximum number of outbound connections"`
-	Seeds               string `toml:"seeds" comment:"seed nodes we can use to discover peers"`
+	Seeds               string   `toml:"seeds" comment:"seed nodes we can use to discover peers"`
 }
 
 // LoadOrGenConfig loads a seed config from file if the file exists
