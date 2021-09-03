@@ -5,7 +5,6 @@ import (
 	"flag"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/binaryholdings/tenderseed/internal/cmd"
 	"github.com/binaryholdings/tenderseed/internal/tenderseed"
