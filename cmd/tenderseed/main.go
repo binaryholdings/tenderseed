@@ -18,6 +18,7 @@ import (
 
 func main() {
 	userHomeDir, err := homedir.Dir()
+	var capChainID string
 	if err != nil {
 		panic(err)
 	}
@@ -39,10 +40,11 @@ func main() {
 
 	flag.Parse()
 
+	capChainID = strings.Title(*chainID)
 	// overwrite homedir and configfile with env var if they're set
 	if *chainID != "" {
-		os_homeDir := os.Getenv(*chainID + "_" + "homeDir")
-		os_configFile := os.Getenv(*chainID + "_" + "configFile")
+		os_homeDir := os.Getenv(capChainID + "_" + "homeDir")
+		os_configFile := os.Getenv(capChainID + "_" + "configFile")
 		if os_homeDir != "" {
 			homeDir = &os_homeDir
 		}
@@ -92,15 +94,18 @@ func main() {
 	if *chainID == "" {
 		chainID = &seedConfig.ChainID
 	}
+	capChainID = strings.Title(*chainID)
+
 	// overwrite config with os evironment var
-	os_seeds := os.Getenv(*chainID + "_" + "seeds")
-	os_maxNumOutBoundPeers := os.Getenv(*chainID + "_" + "maxNumOutBoundPeers")
-	os_maxNumInBoundPeers := os.Getenv(*chainID + "_" + "maxNumInBoundPeers")
-	os_addrBookStrict := os.Getenv(*chainID + "_" + "addrBookStrict")
-	os_addrBookFile := os.Getenv(*chainID + "_" + "addrBookFile")
-	os_listenAddress := os.Getenv(*chainID + "_" + "listenAddress")
-	os_nodeKeyFile := os.Getenv(*chainID + "_" + "nodeKeyFile")
-	os_homeDir := os.Getenv(*chainID + "_" + "homeDir")
+
+	os_seeds := os.Getenv("TENDERSEED" + capChainID + "_" + "SEEDS")
+	os_maxNumOutBoundPeers := os.Getenv("TENDERSEED" + capChainID + "_" + "MAXNUMOUTBOUNDPEERS")
+	os_maxNumInBoundPeers := os.Getenv("TENDERSEED" + capChainID + "_" + "MAXNUMINBOUNDPEERS")
+	os_addrBookStrict := os.Getenv("TENDERSEED" + capChainID + "_" + "ADDRBOOKSTRICT")
+	os_addrBookFile := os.Getenv("TENDERSEED" + capChainID + "_" + "ADDRBOOKFILE")
+	os_listenAddress := os.Getenv("TENDERSEED" + capChainID + "_" + "LISTENADDRESS")
+	os_nodeKeyFile := os.Getenv("TENDERSEED" + capChainID + "_" + "NODEKEYFILE")
+	os_homeDir := os.Getenv("TENDERSEED" + capChainID + "_" + "HOMEDIR")
 
 	if os_seeds != "" {
 		seedSlice := strings.Split(os_seeds, ",")
@@ -125,13 +130,13 @@ func main() {
 	if os_maxNumInBoundPeers != "" {
 		seedConfig.MaxNumInboundPeers, err = strconv.Atoi(os_maxNumInBoundPeers)
 		if err != nil {
-			fmt.Println("env var " + *chainID + "_" + "maxNumInBoundPeers set to invalid value")
+			fmt.Println("env var " + "TENDERSEED " + capChainID + "_" + "MAXNUMINBOUNDPEERS set to invalid value")
 		}
 	}
 	if os_maxNumOutBoundPeers != "" {
 		seedConfig.MaxNumOutboundPeers, err = strconv.Atoi(os_maxNumOutBoundPeers)
 		if err != nil {
-			fmt.Println("env var " + *chainID + "_" + "maxNumOutBoundPeers set to invalid value")
+			fmt.Println("env var " + "TENDERSEED " + capChainID + "_" + "MAXNUMOUTBOUNDPEERS set to invalid value")
 		}
 	}
 	if os_homeDir != "" {
