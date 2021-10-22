@@ -1,16 +1,28 @@
-FROM faddat/archlinux as builder
+FROM golang:1.15.5-alpine3.12 as builder
 
-ENV GOPATH /go
-ENV PATH $PATH:/go/bin
+# Set workdir
+WORKDIR /sources
 
-RUN pacman -Syyu --noconfirm go git
+# Add source files
+COPY . .
 
-COPY . ./tenderseed
+# Install minimum necessary dependencies
+RUN apk add --no-cache make gcc libc-dev
 
-RUN cd /tenderseed && \ 
-      go mod download && \
-      go install ./...
+RUN make build
 
-FROM faddat/archlinux
+# ----------------------------
 
-COPY --from=builder /go/bin/tenderseed /usr/bin/tenderseed
+FROM alpine:3.12
+
+COPY --from=builder /sources/build/ /usr/local/bin/
+
+RUN addgroup tendermint && adduser -S -G tendermint tendermint -h /data
+
+USER tendermint
+
+WORKDIR /data
+
+EXPOSE 26656
+
+ENTRYPOINT ["tenderseed", "start"]

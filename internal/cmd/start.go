@@ -11,6 +11,7 @@ import (
 	"github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
+	tmstrings "github.com/tendermint/tendermint/libs/strings"
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/p2p/pex"
 	"github.com/tendermint/tendermint/version"
@@ -20,6 +21,7 @@ import (
 
 // StartArgs for the start command
 type StartArgs struct {
+	HomeDir    string
 	SeedConfig tenderseed.Config
 }
 
@@ -47,17 +49,15 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 		log.NewSyncWriter(os.Stdout),
 	)
 
-	chainID := args.SeedConfig.ChainID
-
-	// Load from config file
+	chainID := args.SeedConfig.ChainID    
 	nodeKeyFilePath := args.SeedConfig.NodeKeyFile
 	addrBookFilePath := args.SeedConfig.AddrBookFile
 
 	if !filepath.IsAbs(nodeKeyFilePath) {
-		nodeKeyFilePath = filepath.Join(args.SeedConfig.HomeDir, nodeKeyFilePath)
+		nodeKeyFilePath = filepath.Join(args.HomeDir, nodeKeyFilePath)
 	}
 	if !filepath.IsAbs(addrBookFilePath) {
-		addrBookFilePath = filepath.Join(args.SeedConfig.HomeDir, addrBookFilePath)
+		addrBookFilePath = filepath.Join(args.HomeDir, addrBookFilePath)
 	}
 
 	tenderseed.MkdirAllPanic(filepath.Dir(nodeKeyFilePath), os.ModePerm)
@@ -80,7 +80,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 	logger.Info("tenderseed",
 		"key", nodeKey.ID(),
 		"listen", args.SeedConfig.ListenAddress,
-		"chain", args.SeedConfig.ChainID,
+		"chain", chainID,
 		"strict-routing", args.SeedConfig.AddrBookStrict,
 		"max-inbound", args.SeedConfig.MaxNumInboundPeers,
 		"max-outbound", args.SeedConfig.MaxNumOutboundPeers,
@@ -100,7 +100,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 		ProtocolVersion: protocolVersion,
 		DefaultNodeID:   nodeKey.ID(),
 		ListenAddr:      args.SeedConfig.ListenAddress,
-		Network:         args.SeedConfig.ChainID,
+		Network:         chainID,
 		Version:         "0.0.1",
 		Channels:        []byte{pex.PexChannel},
 		Moniker:         fmt.Sprintf("%s-seed", chainID),
@@ -121,7 +121,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 
 	pexReactor := pex.NewReactor(book, &pex.ReactorConfig{
 		SeedMode: true,
-		Seeds:    args.SeedConfig.Seeds,
+		Seeds:    tmstrings.SplitAndTrim(args.SeedConfig.Seeds, ",", " "),
 	})
 	pexReactor.SetLogger(filteredLogger.With("module", "pex"))
 

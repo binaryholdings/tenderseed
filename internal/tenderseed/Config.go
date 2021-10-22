@@ -17,8 +17,7 @@ type Config struct {
 	AddrBookStrict      bool     `toml:"addr_book_strict" comment:"Set true for strict routability rules\n Set false for private or local networks"`
 	MaxNumInboundPeers  int      `toml:"max_num_inbound_peers" comment:"maximum number of inbound connections"`
 	MaxNumOutboundPeers int      `toml:"max_num_outbound_peers" comment:"maximum number of outbound connections"`
-	Seeds               []string `toml:"seeds" comment:"seed nodes we can use to discover peers"`
-	HomeDir             string
+	Seeds               string   `toml:"seeds" comment:"seed nodes we can use to discover peers"`
 }
 
 // LoadOrGenConfig loads a seed config from file if the file exists
@@ -29,7 +28,7 @@ func LoadOrGenConfig(filePath string) (*Config, error) {
 	if err == nil {
 		return config, nil
 	} else if !os.IsNotExist(err) {
-		return &Config{}, err
+		return nil, err
 	}
 
 	// file did not exist
@@ -68,13 +67,12 @@ func WriteConfigToFile(file string, config Config) error {
 func DefaultConfig() *Config {
 	return &Config{
 		ListenAddress:       "tcp://0.0.0.0:26656",
-		ChainID:             "some-chain-id",
+		ChainID:             "",
 		NodeKeyFile:         "config/node_key.json",
 		AddrBookFile:        "data/addrbook.json",
 		AddrBookStrict:      true,
-		MaxNumInboundPeers:  1000,
+		MaxNumInboundPeers:  100,
 		MaxNumOutboundPeers: 60,
-		Seeds:               nil,
-		HomeDir:             "",
+		Seeds:               "",
 	}
 }
