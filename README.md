@@ -79,27 +79,27 @@ node_key_file = "config/node_key.json"
 The seed can also be configured via env var. The config from env var will overwrite config from config file
 ```env var
 # path to address book (relative to tendermint-seed home directory or an absolute path)
-TENDERSEED_GAIA_ADDRBOOKFILE = "data/addrbook.json"
+TENDERSEED_GAIA_ADDRBOOKFILE="data/addrbook.json"
 
 # Set true for strict routability rules
 # Set false for private or local networks
-TENDERSEED_GAIA_ADDRBOOKSTRICT = true
+TENDERSEED_GAIA_ADDRBOOKSTRICT=true
 
 # Address to listen for incoming connections
-TENDERSEED_GAIA_LISTENADDRESS = "tcp://0.0.0.0:26656"
+TENDERSEED_GAIA_LISTENADDRESS="tcp://0.0.0.0:26656"
 
 # maximum number of inbound connections
-TENDERSEED_GAIA_MAXNUMINBOUNDPEERS = 1000
+TENDERSEED_GAIA_MAXNUMINBOUNDPEERS=1000
 
 # maximum number of outbound connections
-TENDERSEED_GAIA_MAXNUMOUTBOUNDPEERS = 10
+TENDERSEED_GAIA_MAXNUMOUTBOUNDPEERS=10
 
 # path to node_key (relative to tendermint-seed home directory or an absolute path)
-TENDERSEED_GAIA_NODEKEYFILE = "config/node_key.json"
+TENDERSEED_GAIA_NODEKEYFILE="config/node_key.json"
 
 tenderseed start -chain-id gaia
 ```
-
+env var -- overwrite --> flag -- overwrite --> config file
 
 
 
