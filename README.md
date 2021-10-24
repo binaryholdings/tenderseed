@@ -22,34 +22,9 @@ go install .
 tenderseed
 ```
 
-
-
-Here is its complete configuration:
-
-```go
-type Config struct {
-	ListenAddress       string   `toml:"laddr" comment:"Address to listen for incoming connections"`
-	ChainID             string   `toml:"chain_id" comment:"network identifier (todo move to cli flag argument? keeps the config network agnostic)"`
-	NodeKeyFile         string   `toml:"node_key_file" comment:"path to node_key (relative to tendermint-seed home directory or an absolute path)"`
-	AddrBookFile        string   `toml:"addr_book_file" comment:"path to address book (relative to tendermint-seed home directory or an absolute path)"`
-	AddrBookStrict      bool     `toml:"addr_book_strict" comment:"Set true for strict routability rules\n Set false for private or local networks"`
-	MaxNumInboundPeers  int      `toml:"max_num_inbound_peers" comment:"maximum number of inbound connections"`
-	MaxNumOutboundPeers int      `toml:"max_num_outbound_peers" comment:"maximum number of outbound connections"`
-	Seeds               string   `toml:"seeds" comment:"seed nodes we can use to discover peers"`
-}
-
-```
-
-
 ## This is a fork of polychainlabs tenderseed repo
 
-A lightweight seed node for a Tendermint p2p network.
-
-Seed nodes maintain an address book of active peers on a Tendermint p2p network. New nodes can dial known seeds and request lists of active peers for establishing p2p connections.
-
-This project implements a lightweight seed node. The lightweight node maintains an address book of active peers, but **does not** relay or store blocks or transactions.
-
-Familiarity with [Tendermint network operation](https://tendermint.com/docs/tendermint-core/using-tendermint.html) is a pre-requisite to understanding how to use TenderSeed.
+Familiarity with [Tendermint network operation](https://tendermint.com/docs/tendermint-core/using-tendermint.html) is **b**a pre-requisite to understanding how to use TenderSeed.
 
 ## Quickstart
 
@@ -84,66 +59,6 @@ tenderseed --home /some/path/to/home/dir
 ```
 
 > The default configuration stores the node key in a `config` folder and the address book in a `data` folder within the home folder.
-
-## Configuration
-
-TenderSeed is configured by a [toml](https://github.com/toml-lang/toml) config file found in the tenderseed [home dir](#Home-Dir) as `config/config.toml`
-
-The seed is configured via a [toml](https://github.com/toml-lang/toml) config file. The default configuration file is shown below.
-
-> A first run of Tenderseed will generate a default configuration if one does not exist.
-
-```toml
-# path to address book (relative to tendermint-seed home directory or an absolute path)
-addr_book_file = "data/addrbook.json"
-
-# Set true for strict routability rules
-# Set false for private or local networks
-addr_book_strict = true
-
-# network identifier (todo move to cli flag argument? keeps the config network agnostic)
-chain_id = "some-chain-id"
-
-# Address to listen for incoming connections
-laddr = "tcp://0.0.0.0:26656"
-
-# maximum number of inbound connections
-max_num_inbound_peers = 1000
-
-# maximum number of outbound connections
-max_num_outbound_peers = 10
-
-# path to node_key (relative to tendermint-seed home directory or an absolute path)
-node_key_file = "config/node_key.json"
-```
-
-The seed can also be configured via env var. The config from env var will overwrite config from config file
-```env var
-# path to address book (relative to tendermint-seed home directory or an absolute path)
-TENDERSEED_GAIA_ADDRBOOKFILE="data/addrbook.json"
-
-# Set true for strict routability rules
-# Set false for private or local networks
-TENDERSEED_GAIA_ADDRBOOKSTRICT=true
-
-# Address to listen for incoming connections
-TENDERSEED_GAIA_LISTENADDRESS="tcp://0.0.0.0:26656"
-
-# maximum number of inbound connections
-TENDERSEED_GAIA_MAXNUMINBOUNDPEERS=1000
-
-# maximum number of outbound connections
-TENDERSEED_GAIA_MAXNUMOUTBOUNDPEERS=10
-
-# path to node_key (relative to tendermint-seed home directory or an absolute path)
-TENDERSEED_GAIA_NODEKEYFILE="config/node_key.json"
-
-tenderseed -chain-id gaia start
-```
-env var -- overwrite --> flag -- overwrite --> config file
-
-
-
 
 ## License
 
