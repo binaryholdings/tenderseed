@@ -31,14 +31,14 @@ type Config struct {
 // DefaultConfig returns a seed config initialized with default values
 func DefaultConfig() *Config {
 	return &Config{
-		ListenAddress:       "tcp://0.0.0.0:26656",
-		ChainID:             "cosmoshub-4",
+		ListenAddress:       "tcp://0.0.0.0:6969",
+		ChainID:             "osmosis-1",
 		NodeKeyFile:         "config/node_key.json",
 		AddrBookFile:        "data/addrbook.json",
 		AddrBookStrict:      true,
 		MaxNumInboundPeers:  1000,
 		MaxNumOutboundPeers: 1000,
-		Seeds:               "1b077d96ceeba7ef503fb048f343a538b2dcdf1b@136.243.218.244,2308bed9e096a8b96d2aa343acc1147813c59ed2@3.225.38.25:26656,902bdfe51b6a97cc9369664a21c87ed61d471d2a@136.243.218.243,085f62d67bbf9c501e8ac84d4533440a1eef6c45@95.217.196.54:26656,f515a8599b40f0e84dfad935ba414674ab11a668@osmosis.blockpane.com:26656",
+		Seeds:               "1b077d96ceeba7ef503fb048f343a538b2dcdf1b@136.243.218.244:26656,2308bed9e096a8b96d2aa343acc1147813c59ed2@3.225.38.25:26656,085f62d67bbf9c501e8ac84d4533440a1eef6c45@95.217.196.54:26656,f515a8599b40f0e84dfad935ba414674ab11a668@osmosis.blockpane.com:26656",
 	}
 }
 
