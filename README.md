@@ -1,7 +1,5 @@
 # TinySeed
 
-This program is being refactored so that it has a single API and manner of execution.  TinySeed 
-
 To make it easier to use in Docker on Aakash, everything else has been given a default value.
 
 If you do nothing, eg:
