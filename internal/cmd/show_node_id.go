@@ -22,7 +22,7 @@ type ShowNodeIDArgs struct {
 // Name returns the command name
 func (*ShowNodeIDArgs) Name() string { return "show-node-id" }
 
-// Synopsis returns a ummary for the command
+// Synopsis returns a summary for the command
 func (*ShowNodeIDArgs) Synopsis() string { return "show the node id" }
 
 // Usage returns full usage for the command

@@ -101,7 +101,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 		DefaultNodeID:   nodeKey.ID(),
 		ListenAddr:      args.SeedConfig.ListenAddress,
 		Network:         chainID,
-		Version:         "0.0.1",
+		Version:         "0.6.9",
 		Channels:        []byte{pex.PexChannel},
 		Moniker:         fmt.Sprintf("%s-seed", chainID),
 	}
