@@ -1,10 +1,9 @@
 go 1.17
 
-module github.com/binaryholdings/tenderseed
+module github.com/notional-labs/tinyseed
 
 require (
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/pelletier/go-toml v1.6.0
 	github.com/tendermint/tendermint v0.34.14
 )
 
