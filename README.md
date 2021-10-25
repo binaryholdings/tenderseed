@@ -1,6 +1,6 @@
 # TinySeed
 
-## This is a fork of Binary Holding's Tenderseed, which is a fork of Polychain's Tenderseed
+## TinySeed is a fork of Binary Holding's Tenderseed, which is a fork of Polychain's Tenderseed
 
 Familiarity with [Tendermint network operation](https://tendermint.com/docs/tendermint-core/using-tendermint.html) is **NOT** a pre-requisite to understanding how to use TinySeed.
 
@@ -25,8 +25,6 @@ go mod tidy
 go install .
 tenderseed
 ```
-
-
 
 ## Quickstart
 
