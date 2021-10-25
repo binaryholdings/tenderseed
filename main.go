@@ -17,6 +17,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 )
 
+// Config defines the configuration format for TinySeed
 type Config struct {
 	ListenAddress       string `toml:"laddr" comment:"Address to listen for incoming connections"`
 	ChainID             string `toml:"chain_id" comment:"network identifier (todo move to cli flag argument? keeps the config network agnostic)"`
@@ -42,6 +43,7 @@ func DefaultConfig() *Config {
 	}
 }
 
+// TinySeed lives here.  Smol ting.
 func main() {
 	userHomeDir, err := homedir.Dir()
 	if err != nil {
