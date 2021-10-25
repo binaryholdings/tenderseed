@@ -1,28 +1,18 @@
-FROM golang:1.15.5-alpine3.12 as builder
+FROM faddat/archlinux AS builder
 
-# Set workdir
-WORKDIR /sources
+COPY . /tinyseed
 
-# Add source files
-COPY . .
 
-# Install minimum necessary dependencies
-RUN apk add --no-cache make gcc libc-dev
+ENV PATH $PATH:/root/go/bin
+ENV GOPATH /root/go/
 
-RUN make build
+RUN pacman -Syyu --noconfirm go base-devel
 
-# ----------------------------
 
-FROM alpine:3.12
+RUN cd /tinyseed && go install ./...
 
-COPY --from=builder /sources/build/ /usr/local/bin/
+FROM faddat/archlinux 
 
-RUN addgroup tendermint && adduser -S -G tendermint tendermint -h /data
+COPY --from=builder /root/go/bin/tinyseed /usr/bin/tinyseed
 
-USER tendermint
-
-WORKDIR /data
-
-EXPOSE 26656
-
-ENTRYPOINT ["tenderseed", "start"]
+CMD tinyseed
