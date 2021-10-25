@@ -45,6 +45,8 @@ func DefaultConfig() *Config {
 
 // TinySeed lives here.  Smol ting.
 func main() {
+	idOverride := os.Getenv("ID")
+	seedOverride := os.Getenv("SEEDS")
 	userHomeDir, err := homedir.Dir()
 	if err != nil {
 		panic(err)
@@ -53,11 +55,14 @@ func main() {
 	configFile := "config/config.toml"
 	configFilePath := filepath.Join(homeDir, configFile)
 	MkdirAllPanic(filepath.Dir(configFilePath), os.ModePerm)
-
 	SeedConfig := DefaultConfig()
-
+	if idOverride != "" {
+		SeedConfig.ChainID = idOverride
+	}
+	if seedOverride != "" {
+		SeedConfig.Seeds = seedOverride
+	}
 	Start(*SeedConfig)
-
 }
 
 // MkdirAllPanic invokes os.MkdirAll but panics if there is an error
