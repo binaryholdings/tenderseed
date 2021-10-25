@@ -23,19 +23,8 @@ export SEEDS=bf8328b66dceb4987e5cd94430af66045e59899f@public-seed.cosmos.vitwit.
 git clone https://github.com/notional-labs/tinyseed
 go mod tidy
 go install .
-tenderseed
+tinyseed
 ```
-
-## Quickstart
-
-Build with `make` and start a seed node with the `start` command.
-
-**This will run with defaults and seed/crawl Osmosis**
-```bash
-tenderseed start
-```
-
-
 
 ## License
 
