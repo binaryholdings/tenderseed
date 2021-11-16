@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
@@ -9,10 +10,21 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/p2p/pex"
 	"github.com/tendermint/tendermint/version"
+	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/mitchellh/go-homedir"
+)
+
+var (
+//	https://blog.jetbrains.com/go/2021/06/09/how-to-use-go-embed-in-go-1-16/
+	//go:embed resources
+	res embed.FS
+	pages = map[string]string{
+		"/": "web/index.html",
+	}
 )
 
 // Config defines the configuration format
@@ -38,6 +50,19 @@ func DefaultConfig() *Config {
 		MaxNumInboundPeers:  1000,
 		MaxNumOutboundPeers: 1000,
 		Seeds:               "1b077d96ceeba7ef503fb048f343a538b2dcdf1b@136.243.218.244:26656,2308bed9e096a8b96d2aa343acc1147813c59ed2@3.225.38.25:26656,085f62d67bbf9c501e8ac84d4533440a1eef6c45@95.217.196.54:26656,f515a8599b40f0e84dfad935ba414674ab11a668@osmosis.blockpane.com:26656",
+	}
+}
+
+func startWebServer() {
+	http.Handle("/", http.FileServer(http.Dir("/tmp")))
+
+
+	s := &http.Server{
+		Addr:           ":8080",
+		Handler:        myHandler,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
 	}
 }
 
