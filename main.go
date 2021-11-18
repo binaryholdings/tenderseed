@@ -1,8 +1,8 @@
 package main
 
 import (
-	"embed"
 	"fmt"
+	"github.com/mitchellh/go-homedir"
 	"github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
@@ -10,26 +10,21 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/p2p/pex"
 	"github.com/tendermint/tendermint/version"
+	"html/template"
 	"net/http"
 	"os"
 	"path/filepath"
-	"time"
-
-	"github.com/mitchellh/go-homedir"
 )
 
 var (
-//	https://blog.jetbrains.com/go/2021/06/09/how-to-use-go-embed-in-go-1-16/
-	//go:embed resources
-	res embed.FS
-	pages = map[string]string{
-		"/": "web/index.html",
-	}
+	configDir = ".tinyseed"
+	logger    = log.NewTMLogger(log.NewSyncWriter(os.Stdout))
 )
 
 // Config defines the configuration format
 type Config struct {
 	ListenAddress       string `toml:"laddr" comment:"Address to listen for incoming connections"`
+	HttpPort            string `toml:"http_port" comment:"Port for the http server"`
 	ChainID             string `toml:"chain_id" comment:"network identifier (todo move to cli flag argument? keeps the config network agnostic)"`
 	NodeKeyFile         string `toml:"node_key_file" comment:"path to node_key (relative to tendermint-seed home directory or an absolute path)"`
 	AddrBookFile        string `toml:"addr_book_file" comment:"path to address book (relative to tendermint-seed home directory or an absolute path)"`
@@ -43,26 +38,14 @@ type Config struct {
 func DefaultConfig() *Config {
 	return &Config{
 		ListenAddress:       "tcp://0.0.0.0:6969",
+		HttpPort:            "3000",
 		ChainID:             "osmosis-1",
-		NodeKeyFile:         "config/node_key.json",
-		AddrBookFile:        "data/addrbook.json",
+		NodeKeyFile:         "node_key.json",
+		AddrBookFile:        "addrbook.json",
 		AddrBookStrict:      true,
-		MaxNumInboundPeers:  1000,
+		MaxNumInboundPeers:  3000,
 		MaxNumOutboundPeers: 1000,
 		Seeds:               "1b077d96ceeba7ef503fb048f343a538b2dcdf1b@136.243.218.244:26656,2308bed9e096a8b96d2aa343acc1147813c59ed2@3.225.38.25:26656,085f62d67bbf9c501e8ac84d4533440a1eef6c45@95.217.196.54:26656,f515a8599b40f0e84dfad935ba414674ab11a668@osmosis.blockpane.com:26656",
-	}
-}
-
-func startWebServer() {
-	http.Handle("/", http.FileServer(http.Dir("/tmp")))
-
-
-	s := &http.Server{
-		Addr:           ":8080",
-		Handler:        myHandler,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
 	}
 }
 
@@ -70,21 +53,80 @@ func main() {
 	idOverride := os.Getenv("ID")
 	seedOverride := os.Getenv("SEEDS")
 	userHomeDir, err := homedir.Dir()
+	seedConfig := DefaultConfig()
+
 	if err != nil {
 		panic(err)
 	}
-	homeDir := filepath.Join(userHomeDir, ".terranseed")
-	configFile := "config/config.toml"
-	configFilePath := filepath.Join(homeDir, configFile)
+
+	// init config directory & files
+	homeDir := filepath.Join(userHomeDir, configDir, "config")
+	configFilePath := filepath.Join(homeDir, "config.toml")
+	nodeKeyFilePath := filepath.Join(homeDir, seedConfig.NodeKeyFile)
+	addrBookFilePath := filepath.Join(homeDir, seedConfig.AddrBookFile)
+
+	MkdirAllPanic(filepath.Dir(nodeKeyFilePath), os.ModePerm)
+	MkdirAllPanic(filepath.Dir(addrBookFilePath), os.ModePerm)
 	MkdirAllPanic(filepath.Dir(configFilePath), os.ModePerm)
-	SeedConfig := DefaultConfig()
+
 	if idOverride != "" {
-		SeedConfig.ChainID = idOverride
+		seedConfig.ChainID = idOverride
 	}
 	if seedOverride != "" {
-		SeedConfig.Seeds = seedOverride
+		seedConfig.Seeds = seedOverride
 	}
-	Start(*SeedConfig)
+	logger.Info("Starting Web Server...")
+	StartWebServer(*seedConfig)
+	logger.Info("Starting Seed Node...")
+	Start(*seedConfig)
+}
+
+func StartWebServer(seedConfig Config) {
+
+	// serve static assets
+	fs := http.FileServer(http.Dir("./web/assets"))
+	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
+
+	// serve html files
+	http.HandleFunc("/", serveTemplate)
+
+	// start web server in non-blocking
+	go func() {
+		err := http.ListenAndServe(":"+seedConfig.HttpPort, nil)
+		logger.Info("HTTP Server started", "port", seedConfig.HttpPort)
+		if err != nil {
+			panic(err)
+		}
+	}()
+}
+
+func serveTemplate(w http.ResponseWriter, r *http.Request) {
+	index := filepath.Join("./web/templates", "index.html")
+	templates := filepath.Join("./web/templates", filepath.Clean(r.URL.Path))
+	logger.Info("index", "i", index, "t", templates)
+
+	// Return a 404 if the template doesn't exist
+	fileInfo, err := os.Stat(templates)
+
+	if err != nil || fileInfo.IsDir() {
+		http.Redirect(w, r,"/index.html", 302)
+		return
+	}
+
+	tmpl, err := template.ParseFiles(index, templates)
+	if err != nil {
+		// Log the detailed error
+		logger.Error(err.Error())
+		// Return a generic "Internal Server Error" message
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+
+	err = tmpl.ExecuteTemplate(w, "index", nil)
+	if err != nil {
+		logger.Error(err.Error())
+		http.Error(w, http.StatusText(500), 500)
+	}
 }
 
 // MkdirAllPanic invokes os.MkdirAll but panics if there is an error
@@ -96,42 +138,29 @@ func MkdirAllPanic(path string, perm os.FileMode) {
 }
 
 // Start starts a Tenderseed
-func Start(SeedConfig Config) {
-	logger := log.NewTMLogger(
-		log.NewSyncWriter(os.Stdout),
-	)
+func Start(seedConfig Config) {
 
-	chainID := SeedConfig.ChainID
-	nodeKeyFilePath := SeedConfig.NodeKeyFile
-	addrBookFilePath := SeedConfig.AddrBookFile
-
-	MkdirAllPanic(filepath.Dir(nodeKeyFilePath), os.ModePerm)
-	MkdirAllPanic(filepath.Dir(addrBookFilePath), os.ModePerm)
+	chainID := seedConfig.ChainID
 
 	cfg := config.DefaultP2PConfig()
 	cfg.AllowDuplicateIP = true
 
-	// allow a lot of inbound peers since we disconnect from them quickly in seed mode
-	cfg.MaxNumInboundPeers = 3000
-
-	// keep trying to make outbound connections to exchange peering info
-	cfg.MaxNumOutboundPeers = 400
-
+	userHomeDir, err := homedir.Dir()
+	nodeKeyFilePath := filepath.Join(userHomeDir, configDir, "config", seedConfig.NodeKeyFile)
 	nodeKey, err := p2p.LoadOrGenNodeKey(nodeKeyFilePath)
 	if err != nil {
 		panic(err)
 	}
 
-	logger.Info("terranseed",
+	logger.Info("Configuration",
 		"key", nodeKey.ID(),
-		"listen", SeedConfig.ListenAddress,
+		"listen", seedConfig.ListenAddress,
 		"chain", chainID,
-		"strict-routing", SeedConfig.AddrBookStrict,
-		"max-inbound", SeedConfig.MaxNumInboundPeers,
-		"max-outbound", SeedConfig.MaxNumOutboundPeers,
+		"strict-routing", seedConfig.AddrBookStrict,
+		"max-inbound", seedConfig.MaxNumInboundPeers,
+		"max-outbound", seedConfig.MaxNumOutboundPeers,
 	)
 
-	// TODO(roman) expose per-module log levels in the config
 	filteredLogger := log.NewFilter(logger, log.AllowInfo())
 
 	protocolVersion :=
@@ -141,11 +170,11 @@ func Start(SeedConfig Config) {
 			0,
 		)
 
-	// NodeInfo gets info on yhour node
+	// NodeInfo gets info on your node
 	nodeInfo := p2p.DefaultNodeInfo{
 		ProtocolVersion: protocolVersion,
 		DefaultNodeID:   nodeKey.ID(),
-		ListenAddr:      SeedConfig.ListenAddress,
+		ListenAddr:      seedConfig.ListenAddress,
 		Network:         chainID,
 		Version:         "0.6.9",
 		Channels:        []byte{pex.PexChannel},
@@ -162,12 +191,13 @@ func Start(SeedConfig Config) {
 		panic(err)
 	}
 
-	book := pex.NewAddrBook(addrBookFilePath, SeedConfig.AddrBookStrict)
+	addrBookFilePath := filepath.Join(userHomeDir, configDir, "config", seedConfig.AddrBookFile)
+	book := pex.NewAddrBook(addrBookFilePath, seedConfig.AddrBookStrict)
 	book.SetLogger(filteredLogger.With("module", "book"))
 
 	pexReactor := pex.NewReactor(book, &pex.ReactorConfig{
 		SeedMode: true,
-		Seeds:    tmstrings.SplitAndTrim(SeedConfig.Seeds, ",", " "),
+		Seeds:    tmstrings.SplitAndTrim(seedConfig.Seeds, ",", " "),
 	})
 	pexReactor.SetLogger(filteredLogger.With("module", "pex"))
 
