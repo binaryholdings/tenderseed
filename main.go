@@ -1,11 +1,8 @@
 package main
 
 import (
+	"embed"
 	"fmt"
-	"path/filepath"
-
-	"os"
-
 	"github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
@@ -13,11 +10,24 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/p2p/pex"
 	"github.com/tendermint/tendermint/version"
+	"net/http"
+	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/mitchellh/go-homedir"
 )
 
-// Config defines the configuration format for TinySeed
+var (
+//	https://blog.jetbrains.com/go/2021/06/09/how-to-use-go-embed-in-go-1-16/
+	//go:embed resources
+	res embed.FS
+	pages = map[string]string{
+		"/": "web/index.html",
+	}
+)
+
+// Config defines the configuration format
 type Config struct {
 	ListenAddress       string `toml:"laddr" comment:"Address to listen for incoming connections"`
 	ChainID             string `toml:"chain_id" comment:"network identifier (todo move to cli flag argument? keeps the config network agnostic)"`
@@ -43,7 +53,19 @@ func DefaultConfig() *Config {
 	}
 }
 
-// TinySeed lives here.  Smol ting.
+func startWebServer() {
+	http.Handle("/", http.FileServer(http.Dir("/tmp")))
+
+
+	s := &http.Server{
+		Addr:           ":8080",
+		Handler:        myHandler,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
+}
+
 func main() {
 	idOverride := os.Getenv("ID")
 	seedOverride := os.Getenv("SEEDS")
@@ -51,7 +73,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	homeDir := filepath.Join(userHomeDir, ".tenderseed")
+	homeDir := filepath.Join(userHomeDir, ".terranseed")
 	configFile := "config/config.toml"
 	configFilePath := filepath.Join(homeDir, configFile)
 	MkdirAllPanic(filepath.Dir(configFilePath), os.ModePerm)
@@ -100,7 +122,7 @@ func Start(SeedConfig Config) {
 		panic(err)
 	}
 
-	logger.Info("tenderseed",
+	logger.Info("terranseed",
 		"key", nodeKey.ID(),
 		"listen", SeedConfig.ListenAddress,
 		"chain", chainID,
