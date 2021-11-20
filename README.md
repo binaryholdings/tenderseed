@@ -1,8 +1,9 @@
-# TerranSeed
+# Tinyseed
 
-## TerranSeed is a fork of [TinySeed](https://github.com/notional-labs/tinyseed), which is a fork of Binary Holding's Tenderseed, which is a fork of Polychain's Tenderseed
+## TinySeed is a fork of Binary Holding's Tenderseed, which is a fork of Polychain's Tenderseed
 
-This tool runs a seed node for any tendermint based blockchain (i.e. Terra, Cosmos, Akash, etc, thanks to TinySeed), crawls the network and generates a map with the geolocalisation of the peers.
+This tool runs a seed node for any tendermint based blockchain, crawls the network and generates a map with the geolocalisation of the peers.
+
 It is used to pinpoint centralization of network in common infrastructure hosts like AWS, GCP etc.
 
 ###Configuration
