@@ -31,6 +31,47 @@ docker run -e ID=cosmoshub-4 -e SEEDS=bf8328b66dceb4987e5cd94430af66045e59899f@p
 ```
 
 
+## Akash
+
+```yaml
+---
+version: "2.0"
+
+services:
+  osmosis:
+    image: ghcr.io/notional-labs/tinyseed:latest
+    expose:
+      - port: 8080
+        as: 80
+        to:
+          - global: true
+      - port: 6969
+        to:
+          - global: true
+profiles:
+  compute:
+    osmosis:
+      resources:
+        cpu:
+          units: 1
+        memory:
+          size: 200Mi
+        storage:
+          size: 200Mi
+  placement:
+    dcloud:
+      pricing:
+        osmosis:
+          denom: uakt
+          amount: 10
+deployment:
+  osmosis:
+    dcloud:
+      profile: osmosis
+      count: 1
+```
+
+
 ## License
 
 [Blue Oak Model License 1.0.0](https://blueoakcouncil.org/license/1.0.0)
