@@ -38,8 +38,11 @@ docker run -e ID=cosmoshub-4 -e SEEDS=bf8328b66dceb4987e5cd94430af66045e59899f@p
 version: "2.0"
 
 services:
-  osmosis:
+  cosmos:
     image: ghcr.io/notional-labs/tinyseed:latest
+    env:
+      - ID=cosmoshub-4
+      - SEEDS=bf8328b66dceb4987e5cd94430af66045e59899f@public-seed.cosmos.vitwit.com:26656,cfd785a4224c7940e9a10f6c1ab24c343e923bec@164.68.107.188:26656,d72b3011ed46d783e369fdf8ae2055b99a1e5074@173.249.50.25:26656,ba3bacc714817218562f743178228f23678b2873@public-seed-node.cosmoshub.certus.one:26656,3c7cad4154967a294b3ba1cc752e40e8779640ad@84.201.128.115:26656,366ac852255c3ac8de17e11ae9ec814b8c68bddb@51.15.94.196:26656
     expose:
       - port: 8080
         as: 80
@@ -50,7 +53,7 @@ services:
           - global: true
 profiles:
   compute:
-    osmosis:
+    cosmos:
       resources:
         cpu:
           units: 1
@@ -61,13 +64,13 @@ profiles:
   placement:
     dcloud:
       pricing:
-        osmosis:
+        cosmos:
           denom: uakt
           amount: 10
 deployment:
-  osmosis:
+  cosmos:
     dcloud:
-      profile: osmosis
+      profile: cosmos
       count: 1
 ```
 
