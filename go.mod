@@ -1,6 +1,6 @@
 go 1.17
 
-module github.com/notional-labs/tinyseed
+module github.com/terran-stakers/terranseed
 
 require (
 	github.com/mitchellh/go-homedir v1.1.0
