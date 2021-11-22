@@ -154,7 +154,8 @@ func Start(seedConfig Config) {
 
 	logger.Info("Configuration",
 		"key", nodeKey.ID(),
-		"listen", seedConfig.ListenAddress,
+		"node listen", seedConfig.ListenAddress,
+		"http server port", seedConfig.HttpPort,
 		"chain", chainID,
 		"strict-routing", seedConfig.AddrBookStrict,
 		"max-inbound", seedConfig.MaxNumInboundPeers,
