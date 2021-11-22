@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 var (
@@ -109,7 +110,7 @@ func serveTemplate(w http.ResponseWriter, r *http.Request) {
 	fileInfo, err := os.Stat(templates)
 
 	if err != nil || fileInfo.IsDir() {
-		http.Redirect(w, r,"/index.html", 302)
+		http.Redirect(w, r, "/index.html", 302)
 		return
 	}
 
@@ -197,8 +198,10 @@ func Start(seedConfig Config) {
 	book.SetLogger(filteredLogger.With("module", "book"))
 
 	pexReactor := pex.NewReactor(book, &pex.ReactorConfig{
-		SeedMode: true,
-		Seeds:    tmstrings.SplitAndTrim(seedConfig.Seeds, ",", " "),
+		SeedMode:                     true,
+		Seeds:                        tmstrings.SplitAndTrim(seedConfig.Seeds, ",", " "),
+		SeedDisconnectWaitPeriod:     1 * time.Second, // default is 28 hours, we just want to harvest as many addresses as possible
+		PersistentPeersMaxDialPeriod: 0,               // use exponential back-off
 	})
 	pexReactor.SetLogger(filteredLogger.With("module", "pex"))
 
@@ -224,6 +227,18 @@ func Start(seedConfig Config) {
 	if err != nil {
 		panic(err)
 	}
+
+	go func() {
+		// Fire periodically
+		ticker := time.NewTicker(5 * time.Second)
+
+		for {
+			select {
+			case <-ticker.C:
+				logger.Info("Peers list", "peers", sw.Peers().List())
+			}
+		}
+	}()
 
 	sw.Wait()
 }
