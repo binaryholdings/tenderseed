@@ -2,6 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"time"
+
 	"github.com/mitchellh/go-homedir"
 	"github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
@@ -10,11 +14,6 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/p2p/pex"
 	"github.com/tendermint/tendermint/version"
-	"html/template"
-	"net/http"
-	"os"
-	"path/filepath"
-	"time"
 )
 
 var (
@@ -25,7 +24,6 @@ var (
 // Config defines the configuration format
 type Config struct {
 	ListenAddress       string `toml:"laddr" comment:"Address to listen for incoming connections"`
-	HttpPort            string `toml:"http_port" comment:"Port for the http server"`
 	ChainID             string `toml:"chain_id" comment:"network identifier (todo move to cli flag argument? keeps the config network agnostic)"`
 	NodeKeyFile         string `toml:"node_key_file" comment:"path to node_key (relative to tendermint-seed home directory or an absolute path)"`
 	AddrBookFile        string `toml:"addr_book_file" comment:"path to address book (relative to tendermint-seed home directory or an absolute path)"`
@@ -39,7 +37,6 @@ type Config struct {
 func DefaultConfig() *Config {
 	return &Config{
 		ListenAddress:       "tcp://0.0.0.0:6969",
-		HttpPort:            "3000",
 		ChainID:             "osmosis-1",
 		NodeKeyFile:         "node_key.json",
 		AddrBookFile:        "addrbook.json",
@@ -76,58 +73,8 @@ func main() {
 	if seedOverride != "" {
 		seedConfig.Seeds = seedOverride
 	}
-	logger.Info("Starting Web Server...")
-	StartWebServer(*seedConfig)
 	logger.Info("Starting Seed Node...")
 	Start(*seedConfig)
-}
-
-func StartWebServer(seedConfig Config) {
-
-	// serve static assets
-	fs := http.FileServer(http.Dir("./web/assets"))
-	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
-
-	// serve html files
-	http.HandleFunc("/", serveTemplate)
-
-	// start web server in non-blocking
-	go func() {
-		err := http.ListenAndServe(":"+seedConfig.HttpPort, nil)
-		logger.Info("HTTP Server started", "port", seedConfig.HttpPort)
-		if err != nil {
-			panic(err)
-		}
-	}()
-}
-
-func serveTemplate(w http.ResponseWriter, r *http.Request) {
-	index := filepath.Join("./web/templates", "index.html")
-	templates := filepath.Join("./web/templates", filepath.Clean(r.URL.Path))
-	logger.Info("index", "i", index, "t", templates)
-
-	// Return a 404 if the template doesn't exist
-	fileInfo, err := os.Stat(templates)
-
-	if err != nil || fileInfo.IsDir() {
-		http.Redirect(w, r, "/index.html", 302)
-		return
-	}
-
-	tmpl, err := template.ParseFiles(index, templates)
-	if err != nil {
-		// Log the detailed error
-		logger.Error(err.Error())
-		// Return a generic "Internal Server Error" message
-		http.Error(w, http.StatusText(500), 500)
-		return
-	}
-
-	err = tmpl.ExecuteTemplate(w, "index", nil)
-	if err != nil {
-		logger.Error(err.Error())
-		http.Error(w, http.StatusText(500), 500)
-	}
 }
 
 // MkdirAllPanic invokes os.MkdirAll but panics if there is an error
@@ -156,7 +103,6 @@ func Start(seedConfig Config) {
 	logger.Info("Configuration",
 		"key", nodeKey.ID(),
 		"node listen", seedConfig.ListenAddress,
-		"http server port", seedConfig.HttpPort,
 		"chain", chainID,
 		"strict-routing", seedConfig.AddrBookStrict,
 		"max-inbound", seedConfig.MaxNumInboundPeers,
