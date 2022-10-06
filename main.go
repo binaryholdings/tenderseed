@@ -1,14 +1,15 @@
 package main
 
 import (
-	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/mitchellh/go-homedir"
-	lens "github.com/strangelove-ventures/lens/client/chain_registry"
 	"github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
@@ -16,7 +17,6 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/p2p/pex"
 	"github.com/tendermint/tendermint/version"
-	"go.uber.org/zap"
 )
 
 var (
@@ -34,19 +34,21 @@ type Config struct {
 	MaxNumInboundPeers  int    `toml:"max_num_inbound_peers" comment:"maximum number of inbound connections"`
 	MaxNumOutboundPeers int    `toml:"max_num_outbound_peers" comment:"maximum number of outbound connections"`
 	Seeds               string `toml:"seeds" comment:"seed nodes we can use to discover peers"`
+	Peers               string `toml:"persistent_peers" comment:"persistent peers we will always keep connected to"`
 }
 
 // DefaultConfig returns a seed config initialized with default values
 func DefaultConfig() *Config {
 	return &Config{
 		ListenAddress:       "tcp://0.0.0.0:6969",
-		ChainID:             "osmosis-1",
+		ChainID:             "",
 		NodeKeyFile:         "node_key.json",
 		AddrBookFile:        "addrbook.json",
 		AddrBookStrict:      true,
 		MaxNumInboundPeers:  3000,
-		MaxNumOutboundPeers: 1000,
-		Seeds:               "1b077d96ceeba7ef503fb048f343a538b2dcdf1b@136.243.218.244:26656,2308bed9e096a8b96d2aa343acc1147813c59ed2@3.225.38.25:26656,085f62d67bbf9c501e8ac84d4533440a1eef6c45@95.217.196.54:26656,f515a8599b40f0e84dfad935ba414674ab11a668@osmosis.blockpane.com:26656",
+		MaxNumOutboundPeers: 100,
+		Seeds:               "",
+		Peers:               "",
 	}
 }
 
@@ -57,41 +59,43 @@ func main() {
 		panic(err)
 	}
 
-	var zaplog *zap.Logger
-	registry := lens.NewCosmosGithubRegistry(zaplog)
-	ctx, cancelfunc := context.WithDeadline(context.Background(), time.Now().Add(10*time.Second))
-	chains, err := registry.ListChains(ctx)
-	if err != nil {
-		panic(err)
-	}
-	defer cancelfunc()
+	chains := getchains()
 
-	var allchains []lens.ChainInfo
+	var allchains []Chain
 	// Get all chains that seeds
-	for _, chain := range chains {
-		current, err := registry.GetChain(ctx, chain)
-		if err != nil {
-			fmt.Println("couldn't get chain", current.ChainID)
-			continue
-		}
+	for _, chain := range chains.Chains {
+		current := getchain(chain)
 		allchains = append(allchains, current)
 		if err != nil {
 			panic(err)
 		}
 	}
 
+	port := 6969
+
 	// Seed each chain
 	for _, chain := range allchains {
-		seedConfig.ChainID = chain.ChainID
+		// increment the port number
+		port++
+		address := "tcp://0.0.0.0:" + fmt.Sprint(port)
 
+		peers := chain.Peers.PersistentPeers
 		seeds := chain.Peers.Seeds
 		// make the struct of seeds into a string
 		var seedstring string
 		for _, seed := range seeds {
 			seedstring = seedstring + seed.ID + "@" + seed.Address + ","
 		}
+		// make the struct of peers into a string
+		var peerstring string
+		for _, peer := range peers {
+			peerstring = peerstring + peer.ID + "@" + peer.Address + ","
+		}
 
+		seedConfig.ChainID = chain.ChainID
 		seedConfig.Seeds = seedstring
+		seedConfig.Peers = peerstring
+		seedConfig.ListenAddress = address
 
 		// init config directory & files
 		homeDir := filepath.Join(userHomeDir, configDir+"/"+chain.ChainID, "config")
@@ -105,8 +109,7 @@ func main() {
 		MkdirAllPanic(filepath.Dir(configFilePath), os.ModePerm)
 
 		logger.Info("Starting Seed Node for" + chain.ChainID)
-		Start(*seedConfig)
-
+		defer Start(*seedConfig)
 	}
 }
 
@@ -220,4 +223,44 @@ func Start(seedConfig Config) {
 	}()
 
 	sw.Wait()
+}
+
+// getchains() gets the list of chains from the chain registry
+func getchains() Chains {
+	resp, err := http.Get("https://cosmos-chain.directory/chains")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	var chains Chains
+
+	json.Unmarshal([]byte(body), &chains)
+	return chains
+}
+
+// getchain() gets one chain's records from the chain registry
+func getchain(chainid string) Chain {
+	resp, err := http.Get("https://cosmos-chain.directory/chains/" + chainid)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	var chain Chain
+
+	json.Unmarshal([]byte(body), &chain)
+	return chain
 }
