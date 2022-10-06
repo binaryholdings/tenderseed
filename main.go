@@ -106,7 +106,7 @@ func main() {
 		os.MkdirAll(filepath.Dir(addrBookFilePath), os.ModePerm)
 		os.MkdirAll(filepath.Dir(configFilePath), os.ModePerm)
 
-		logger.Info("Starting Seed Node for" + chain.ChainID)
+		logger.Info("Starting Seed Node for " + chain.ChainID + " on " + fmt.Sprint(port))
 		defer Start(*seedConfig)
 	}
 }
