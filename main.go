@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/mitchellh/go-homedir"
+	lens "github.com/strangelove-ventures/lens/client/chain_registry"
 	"github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
@@ -14,6 +16,7 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/p2p/pex"
 	"github.com/tendermint/tendermint/version"
+	"go.uber.org/zap"
 )
 
 var (
@@ -48,33 +51,62 @@ func DefaultConfig() *Config {
 }
 
 func main() {
-	idOverride := os.Getenv("ID")
-	seedOverride := os.Getenv("SEEDS")
 	userHomeDir, err := homedir.Dir()
 	seedConfig := DefaultConfig()
-
 	if err != nil {
 		panic(err)
 	}
 
-	// init config directory & files
-	homeDir := filepath.Join(userHomeDir, configDir, "config")
-	configFilePath := filepath.Join(homeDir, "config.toml")
-	nodeKeyFilePath := filepath.Join(homeDir, seedConfig.NodeKeyFile)
-	addrBookFilePath := filepath.Join(homeDir, seedConfig.AddrBookFile)
-
-	MkdirAllPanic(filepath.Dir(nodeKeyFilePath), os.ModePerm)
-	MkdirAllPanic(filepath.Dir(addrBookFilePath), os.ModePerm)
-	MkdirAllPanic(filepath.Dir(configFilePath), os.ModePerm)
-
-	if idOverride != "" {
-		seedConfig.ChainID = idOverride
+	var zaplog *zap.Logger
+	registry := lens.NewCosmosGithubRegistry(zaplog)
+	ctx, cancelfunc := context.WithDeadline(context.Background(), time.Now().Add(10*time.Second))
+	chains, err := registry.ListChains(ctx)
+	if err != nil {
+		panic(err)
 	}
-	if seedOverride != "" {
-		seedConfig.Seeds = seedOverride
+	cancelfunc()
+
+	var allchains []lens.ChainInfo
+	// Get all chains that seeds
+	for _, chain := range chains {
+		current, err := registry.GetChain(ctx, chain)
+		if err != nil {
+			panic(err)
+		}
+		allchains = append(allchains, current)
+		if err != nil {
+			panic(err)
+		}
 	}
-	logger.Info("Starting Seed Node...")
-	Start(*seedConfig)
+
+	// Seed each chain
+	for _, chain := range allchains {
+		seedConfig.ChainID = chain.ChainID
+
+		seeds := chain.Peers.Seeds
+		// make the struct of seeds into a string
+		var seedstring string
+		for _, seed := range seeds {
+			seedstring = seedstring + seed.ID + "@" + seed.Address + ","
+		}
+
+		seedConfig.Seeds = seedstring
+
+		// init config directory & files
+		homeDir := filepath.Join(userHomeDir, configDir+"/"+chain.ChainID, "config")
+		configFilePath := filepath.Join(homeDir, "config.toml")
+		nodeKeyFilePath := filepath.Join(homeDir, seedConfig.NodeKeyFile)
+		addrBookFilePath := filepath.Join(homeDir, seedConfig.AddrBookFile)
+
+		// Make folders
+		MkdirAllPanic(filepath.Dir(nodeKeyFilePath), os.ModePerm)
+		MkdirAllPanic(filepath.Dir(addrBookFilePath), os.ModePerm)
+		MkdirAllPanic(filepath.Dir(configFilePath), os.ModePerm)
+
+		logger.Info("Starting Seed Node for" + chain.ChainID)
+		Start(*seedConfig)
+
+	}
 }
 
 // MkdirAllPanic invokes os.MkdirAll but panics if there is an error
@@ -87,9 +119,7 @@ func MkdirAllPanic(path string, perm os.FileMode) {
 
 // Start starts a Tenderseed
 func Start(seedConfig Config) {
-
 	chainID := seedConfig.ChainID
-
 	cfg := config.DefaultP2PConfig()
 	cfg.AllowDuplicateIP = true
 
@@ -111,12 +141,11 @@ func Start(seedConfig Config) {
 
 	filteredLogger := log.NewFilter(logger, log.AllowInfo())
 
-	protocolVersion :=
-		p2p.NewProtocolVersion(
-			version.P2PProtocol,
-			version.BlockProtocol,
-			0,
-		)
+	protocolVersion := p2p.NewProtocolVersion(
+		version.P2PProtocol,
+		version.BlockProtocol,
+		0,
+	)
 
 	// NodeInfo gets info on your node
 	nodeInfo := p2p.DefaultNodeInfo{
