@@ -80,14 +80,14 @@ func main() {
 		// make the struct of seeds into a string
 		var allseeds []string
 		for _, seed := range seeds {
-			allseeds = append(allseeds, seed.ID+"@"+seed.Address)
+			allseeds = append(allseeds, seed.ID+"@"+seed.Address) //nolint:staticcheck
 		}
 
 		// allpeers is a slice of peers
 		var allpeers []string
 		// make the struct of peers into a string
 		for _, peer := range peers {
-			allpeers = append(allpeers, peer.ID+"@"+peer.Address)
+			allpeers = append(allpeers, peer.ID+"@"+peer.Address) //nolint:staticcheck
 		}
 
 		// set the configuration
@@ -102,9 +102,18 @@ func main() {
 		addrBookFilePath := filepath.Join(homeDir, seedConfig.AddrBookFile)
 
 		// Make folders
-		os.MkdirAll(filepath.Dir(nodeKeyFilePath), os.ModePerm)
-		os.MkdirAll(filepath.Dir(addrBookFilePath), os.ModePerm)
-		os.MkdirAll(filepath.Dir(configFilePath), os.ModePerm)
+		err = os.MkdirAll(filepath.Dir(nodeKeyFilePath), os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
+		err = os.MkdirAll(filepath.Dir(addrBookFilePath), os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
+		err = os.MkdirAll(filepath.Dir(configFilePath), os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
 
 		logger.Info("Starting Seed Node for " + chain.ChainID + " on " + fmt.Sprint(port))
 		defer Start(*seedConfig)
@@ -191,17 +200,19 @@ func Start(seedConfig Config) {
 		panic(err)
 	}
 
-	go func() {
-		// Fire periodically
-		ticker := time.NewTicker(5 * time.Second)
+	/*
+		go func() {
+			// Fire periodically
+			ticker := time.NewTicker(5 * time.Second)
 
-		for {
-			select {
-			case <-ticker.C:
-				logger.Info("Peers list", "peers", sw.Peers().List())
+			for {
+				select {
+				case <-ticker.C:
+					logger.Info("Peers list", "peers", sw.Peers().List())
+				}
 			}
-		}
-	}()
+		}()
+	*/
 
 	sw.Wait()
 }
@@ -222,7 +233,10 @@ func getchains() Chains {
 
 	var chains Chains
 
-	json.Unmarshal([]byte(body), &chains)
+	err = json.Unmarshal([]byte(body), &chains)
+	if err != nil {
+		fmt.Println(err)
+	}
 	return chains
 }
 
@@ -242,6 +256,9 @@ func getchain(chainid string) Chain {
 
 	var chain Chain
 
-	json.Unmarshal([]byte(body), &chain)
+	err = json.Unmarshal([]byte(body), &chain)
+	if err != nil {
+		fmt.Println(err)
+	}
 	return chain
 }
