@@ -64,14 +64,15 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	cancelfunc()
+	defer cancelfunc()
 
 	var allchains []lens.ChainInfo
 	// Get all chains that seeds
 	for _, chain := range chains {
 		current, err := registry.GetChain(ctx, chain)
 		if err != nil {
-			panic(err)
+			fmt.Println("couldn't get chain", current.ChainID)
+			continue
 		}
 		allchains = append(allchains, current)
 		if err != nil {
@@ -124,6 +125,9 @@ func Start(seedConfig Config) {
 	cfg.AllowDuplicateIP = true
 
 	userHomeDir, err := homedir.Dir()
+	if err != nil {
+		panic(err)
+	}
 	nodeKeyFilePath := filepath.Join(userHomeDir, configDir, "config", seedConfig.NodeKeyFile)
 	nodeKey, err := p2p.LoadOrGenNodeKey(nodeKeyFilePath)
 	if err != nil {
