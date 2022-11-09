@@ -40,17 +40,17 @@ func LoadOrGenConfig(filePath string) (*Config, error) {
 
 // LoadConfigFromFile loads a seed config from a file
 func LoadConfigFromFile(file string) (*Config, error) {
-	var config Config
+	config := DefaultConfig()
 	reader, err := os.Open(file)
 	if err != nil {
-		return &config, err
+		return config, err
 	}
 	decoder := toml.NewDecoder(reader)
-	if err := decoder.Decode(&config); err != nil {
-		return &config, err
+	if err := decoder.Decode(config); err != nil {
+		return config, err
 	}
 
-	return &config, nil
+	return config, nil
 }
 
 // WriteConfigToFile writes the seed config to file
