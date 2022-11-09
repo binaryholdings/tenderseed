@@ -72,6 +72,10 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 	// keep trying to make outbound connections to exchange peering info
 	cfg.MaxNumOutboundPeers = args.SeedConfig.MaxNumOutboundPeers
 
+	// allow increasing maximum size of a message packet payload
+	// because there are some chains that override this and result in larger payloads
+	cfg.MaxPacketMsgPayloadSize = args.SeedConfig.MaxPacketMsgPayloadSize
+
 	nodeKey, err := p2p.LoadOrGenNodeKey(nodeKeyFilePath)
 	if err != nil {
 		panic(err)
@@ -84,6 +88,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 		"strict-routing", args.SeedConfig.AddrBookStrict,
 		"max-inbound", args.SeedConfig.MaxNumInboundPeers,
 		"max-outbound", args.SeedConfig.MaxNumOutboundPeers,
+		"max-packet-msg-payload-size", args.SeedConfig.MaxPacketMsgPayloadSize,
 	)
 
 	// TODO(roman) expose per-module log levels in the config
