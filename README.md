@@ -72,8 +72,14 @@ max_num_inbound_peers = 1000
 # maximum number of outbound connections
 max_num_outbound_peers = 10
 
+# maximum size of a message packet payload, in bytes
+max_packet_msg_payload_size = 1024
+
 # path to node_key (relative to tendermint-seed home directory or an absolute path)
 node_key_file = "config/node_key.json"
+
+# seed nodes we can use to discover peers
+seeds = ""
 ```
 
 ## License
