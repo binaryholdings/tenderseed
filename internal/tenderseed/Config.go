@@ -10,14 +10,15 @@ import (
 // Config is a tenderseed configuration
 //nolint:lll
 type Config struct {
-	ListenAddress       string   `toml:"laddr" comment:"Address to listen for incoming connections"`
-	ChainID             string   `toml:"chain_id" comment:"network identifier (todo move to cli flag argument? keeps the config network agnostic)"`
-	NodeKeyFile         string   `toml:"node_key_file" comment:"path to node_key (relative to tendermint-seed home directory or an absolute path)"`
-	AddrBookFile        string   `toml:"addr_book_file" comment:"path to address book (relative to tendermint-seed home directory or an absolute path)"`
-	AddrBookStrict      bool     `toml:"addr_book_strict" comment:"Set true for strict routability rules\n Set false for private or local networks"`
-	MaxNumInboundPeers  int      `toml:"max_num_inbound_peers" comment:"maximum number of inbound connections"`
-	MaxNumOutboundPeers int      `toml:"max_num_outbound_peers" comment:"maximum number of outbound connections"`
-	Seeds               string   `toml:"seeds" comment:"seed nodes we can use to discover peers"`
+	ListenAddress           string   `toml:"laddr" comment:"Address to listen for incoming connections"`
+	ChainID                 string   `toml:"chain_id" comment:"network identifier (todo move to cli flag argument? keeps the config network agnostic)"`
+	NodeKeyFile             string   `toml:"node_key_file" comment:"path to node_key (relative to tendermint-seed home directory or an absolute path)"`
+	AddrBookFile            string   `toml:"addr_book_file" comment:"path to address book (relative to tendermint-seed home directory or an absolute path)"`
+	AddrBookStrict          bool     `toml:"addr_book_strict" comment:"Set true for strict routability rules\n Set false for private or local networks"`
+	MaxNumInboundPeers      int      `toml:"max_num_inbound_peers" comment:"maximum number of inbound connections"`
+	MaxNumOutboundPeers     int      `toml:"max_num_outbound_peers" comment:"maximum number of outbound connections"`
+	MaxPacketMsgPayloadSize int      `toml:"max_packet_msg_payload_size" comment:"maximum size of a message packet payload, in bytes"`
+	Seeds                   string   `toml:"seeds" comment:"seed nodes we can use to discover peers"`
 }
 
 // LoadOrGenConfig loads a seed config from file if the file exists
@@ -39,17 +40,17 @@ func LoadOrGenConfig(filePath string) (*Config, error) {
 
 // LoadConfigFromFile loads a seed config from a file
 func LoadConfigFromFile(file string) (*Config, error) {
-	var config Config
+	config := DefaultConfig()
 	reader, err := os.Open(file)
 	if err != nil {
-		return &config, err
+		return config, err
 	}
 	decoder := toml.NewDecoder(reader)
-	if err := decoder.Decode(&config); err != nil {
-		return &config, err
+	if err := decoder.Decode(config); err != nil {
+		return config, err
 	}
 
-	return &config, nil
+	return config, nil
 }
 
 // WriteConfigToFile writes the seed config to file
@@ -66,13 +67,14 @@ func WriteConfigToFile(file string, config Config) error {
 // DefaultConfig returns a seed config initialized with default values
 func DefaultConfig() *Config {
 	return &Config{
-		ListenAddress:       "tcp://0.0.0.0:26656",
-		ChainID:             "",
-		NodeKeyFile:         "config/node_key.json",
-		AddrBookFile:        "data/addrbook.json",
-		AddrBookStrict:      true,
-		MaxNumInboundPeers:  100,
-		MaxNumOutboundPeers: 60,
-		Seeds:               "",
+		ListenAddress:           "tcp://0.0.0.0:26656",
+		ChainID:                 "",
+		NodeKeyFile:             "config/node_key.json",
+		AddrBookFile:            "data/addrbook.json",
+		AddrBookStrict:          true,
+		MaxNumInboundPeers:      100,
+		MaxNumOutboundPeers:     60,
+		MaxPacketMsgPayloadSize: 1024,
+		Seeds:                   "",
 	}
 }
