@@ -1,4 +1,4 @@
-FROM golang:1.15.5-alpine3.12 as builder
+FROM golang:1.19-alpine3.16 as builder
 
 # Set workdir
 WORKDIR /sources
@@ -13,7 +13,7 @@ RUN make build
 
 # ----------------------------
 
-FROM alpine:3.12
+FROM alpine:3.16
 
 COPY --from=builder /sources/build/ /usr/local/bin/
 
