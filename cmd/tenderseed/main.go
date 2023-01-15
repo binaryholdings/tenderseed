@@ -23,7 +23,6 @@ func main() {
 	configFile := flag.String("config", "config/config.toml", "path to configuration file within home directory")
 	chainID := flag.String("chain-id", "", "chain id")
 	seeds := flag.String("seeds", "", "comma separated list of seeds")
-	logLevel := flag.String("log-level", "", "logging level to filter output (\"info\", \"debug\", \"error\" or \"none\")")
 			     
 	// parse top level flags
 	flag.Parse()
@@ -36,12 +35,11 @@ func main() {
 		panic(err)
 	}
 	
-	// Get chain-id, seeds, log-level from ENV
+	// Get chain-id, seeds from ENV
         env_chainid, env_chainid_ok := os.LookupEnv("TENDERSEED_CHAIN_ID")
         env_seeds, env_seeds_ok := os.LookupEnv("TENDERSEED_SEEDS")
-        env_loglevel, env_loglevel_ok := os.LookupEnv("TENDERSEED_LOG_LEVEL")
 
-        // Set chain-id, seeds, log-level from ARGS or ENV
+        // Set chain-id, seeds from ARGS or ENV
         if *chainID != ""  {
             seedConfig.ChainID = *chainID
         } else if env_chainid_ok {
@@ -51,11 +49,6 @@ func main() {
             seedConfig.Seeds = *seeds
 	} else if env_seeds_ok {
              seedConfig.Seeds = env_seeds
-        }
-        if *logLevel != "" {
-            seedConfig.LogLevel = *logLevel
-	} else if env_loglevel_ok {
-             seedConfig.LogLevel = env_loglevel
         }
 
         if seedConfig.ChainID == "" || seedConfig.Seeds == "" {
