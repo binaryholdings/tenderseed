@@ -12,6 +12,7 @@ import (
 type Config struct {
 	ListenAddress           string   `toml:"laddr" comment:"Address to listen for incoming connections"`
 	ChainID                 string   `toml:"chain_id" comment:"network identifier (todo move to cli flag argument? keeps the config network agnostic)"`
+	LogLevel                string   `toml:"log_level" comment:"logging level to filter output (\"info\", \"debug\", \"error\" or \"none\")"`
 	NodeKeyFile             string   `toml:"node_key_file" comment:"path to node_key (relative to tendermint-seed home directory or an absolute path)"`
 	AddrBookFile            string   `toml:"addr_book_file" comment:"path to address book (relative to tendermint-seed home directory or an absolute path)"`
 	AddrBookStrict          bool     `toml:"addr_book_strict" comment:"Set true for strict routability rules\n Set false for private or local networks"`
@@ -69,6 +70,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		ListenAddress:           "tcp://0.0.0.0:26656",
 		ChainID:                 "",
+		LogLevel:                "info",
 		NodeKeyFile:             "config/node_key.json",
 		AddrBookFile:            "data/addrbook.json",
 		AddrBookStrict:          true,

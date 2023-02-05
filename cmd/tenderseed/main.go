@@ -35,11 +35,11 @@ func main() {
 		panic(err)
 	}
 	
-	// Get chain-id, seeds-nodes from ENV
+	// Get chain-id, seeds from ENV
         env_chainid, env_chainid_ok := os.LookupEnv("TENDERSEED_CHAIN_ID")
         env_seeds, env_seeds_ok := os.LookupEnv("TENDERSEED_SEEDS")
 
-        // Set chain-id, seeds-nodes from ARGS or ENV
+        // Set chain-id, seeds from ARGS or ENV
         if *chainID != ""  {
             seedConfig.ChainID = *chainID
         } else if env_chainid_ok {

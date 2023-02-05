@@ -85,6 +85,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 		"key", nodeKey.ID(),
 		"listen", args.SeedConfig.ListenAddress,
 		"chain", chainID,
+		"log-level", args.SeedConfig.LogLevel,
 		"strict-routing", args.SeedConfig.AddrBookStrict,
 		"max-inbound", args.SeedConfig.MaxNumInboundPeers,
 		"max-outbound", args.SeedConfig.MaxNumOutboundPeers,
@@ -92,7 +93,11 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 	)
 
 	// TODO(roman) expose per-module log levels in the config
-	filteredLogger := log.NewFilter(logger, log.AllowInfo())
+	logOption, err := log.AllowLevel(args.SeedConfig.LogLevel)
+	if err != nil {
+		panic(err)
+	}
+	filteredLogger := log.NewFilter(logger, logOption)
 
 	protocolVersion :=
 		p2p.NewProtocolVersion(
