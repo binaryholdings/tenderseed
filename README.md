@@ -85,6 +85,40 @@ node_key_file = "config/node_key.json"
 seeds = ""
 ```
 
+## Service creation
+With all configurations ready next step could be to set up systemd to run the node daemon with auto-restart. 
+
+1. Copy/move the tenderseed binary to system path:
+```bash
+sudo mv build/tenderseed /usr/bin
+```
+
+2. Setup tenderseed systemd service
+```bash
+ cd $HOME
+ echo "[Unit]
+ Description=Tenderseed Node
+ After=network-online.target
+ [Service]
+ User=${USER}
+ ExecStart=$(which tenderseed) start
+ Restart=always
+ RestartSec=3
+ LimitNOFILE=4096
+ [Install]
+ WantedBy=multi-user.target
+ " >tenderseed.service
+ ```
+Enable and activate the BCNAD service.
+```bash
+sudo mv tenderseed.service /lib/systemd/system/
+sudo systemctl enable tenderseed.service && sudo systemctl start tenderseed.service
+```
+Check the logs to see if everything is working correct:
+```bash
+ sudo journalctl -fu tenderseed -o cat
+```
+
 ## License
 
 [Blue Oak Model License 1.0.0](https://blueoakcouncil.org/license/1.0.0)
