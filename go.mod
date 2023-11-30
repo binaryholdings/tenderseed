@@ -1,21 +1,21 @@
 module github.com/binaryholdings/tenderseed
 
 require (
+	github.com/cometbft/cometbft v0.37.2
 	github.com/google/subcommands v1.0.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pelletier/go-toml v1.9.5
-	github.com/tendermint/tendermint v0.34.29
 )
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/cosmos/gogoproto v1.4.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
 	github.com/go-kit/kit v0.12.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
-	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gtank/merlin v0.1.1 // indirect
 	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
@@ -38,4 +38,4 @@ require (
 go 1.19
 
 // use cometbft
-replace github.com/tendermint/tendermint => github.com/cometbft/cometbft v0.34.29
+//replace github.com/cometbft/cometbft => github.com/cometbft/cometbft v0.34.29

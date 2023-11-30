@@ -9,8 +9,8 @@ import (
 
 	"github.com/binaryholdings/tenderseed/internal/tenderseed"
 
+	"github.com/cometbft/cometbft/p2p"
 	"github.com/google/subcommands"
-	"github.com/tendermint/tendermint/p2p"
 )
 
 // ShowNodeIDArgs for the show-node-id command
