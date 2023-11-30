@@ -7,14 +7,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/cometbft/cometbft/config"
+	"github.com/cometbft/cometbft/libs/log"
+	tmos "github.com/cometbft/cometbft/libs/os"
+	tmstrings "github.com/cometbft/cometbft/libs/strings"
+	"github.com/cometbft/cometbft/p2p"
+	"github.com/cometbft/cometbft/p2p/pex"
+	"github.com/cometbft/cometbft/version"
 	"github.com/google/subcommands"
-	"github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/libs/log"
-	tmos "github.com/tendermint/tendermint/libs/os"
-	tmstrings "github.com/tendermint/tendermint/libs/strings"
-	"github.com/tendermint/tendermint/p2p"
-	"github.com/tendermint/tendermint/p2p/pex"
-	"github.com/tendermint/tendermint/version"
 
 	"github.com/binaryholdings/tenderseed/internal/tenderseed"
 )
@@ -49,7 +49,7 @@ func (args *StartArgs) Execute(_ context.Context, flagSet *flag.FlagSet, _ ...in
 		log.NewSyncWriter(os.Stdout),
 	)
 
-	chainID := args.SeedConfig.ChainID    
+	chainID := args.SeedConfig.ChainID
 	nodeKeyFilePath := args.SeedConfig.NodeKeyFile
 	addrBookFilePath := args.SeedConfig.AddrBookFile
 
